@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import com.facebook.react.modules.core.PermissionListener;
 
@@ -255,6 +257,15 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
       {
         responseHelper.invokeError(callback, "Couldn't get file path for photo");
         return;
+      }
+
+      Intent intent = new Intent();
+      intent.setAction(Intent.ACTION_SEND);
+
+      List<ResolveInfo> resInfoList = currentActivity.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+      for (ResolveInfo resolveInfo : resInfoList) {
+        String packageName = resolveInfo.activityInfo.packageName;
+        currentActivity.grantUriPermission(packageName, cameraCaptureURI, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
       }
       cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraCaptureURI);
     }
